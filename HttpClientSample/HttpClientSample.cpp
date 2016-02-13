@@ -1,4 +1,4 @@
-// HttpClientSample.cpp : Defines the entry point for the console application.
+﻿// HttpClientSample.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
@@ -17,19 +17,20 @@ int main(int argc, char* argv[])
 	auto fileStream = std::make_shared<ostream>();
 
 	// Open stream to output file.
-	pplx::task<void> requestTask = fstream::open_ostream(U("results.html"))
+	pplx::task<void> requestTask = fstream::open_ostream(U("results.json"), std::ios_base::trunc)
 
 		.then([=](ostream outFile)
 	{
 		*fileStream = outFile;
 
-		// Create http_client to send the request.
-		http_client client(U("http://www.bing.com/"));
+		http_client client(U("http://csk1.arta.kz/Synergy"));
 
-		// Build request URI and start the request.
-		uri_builder builder(U("/search"));
-		builder.append_query(U("q"), U("Casablanca CodePlex"));
-		return client.request(methods::GET, builder.to_string());
+//		auto b64cred = conversions::to_base64(std::string("Скрипников:1"));
+		http_request req(methods::GET);
+		req.headers().add(L"Authorization", L"Basic 0KHQutGA0LjQv9C90LjQutC+0LI6MQ==");
+		req.set_request_uri(L"/rest/api/userchooser/search");
+
+		return client.request(req);
 	})
 
 	// Handle response headers arriving.
