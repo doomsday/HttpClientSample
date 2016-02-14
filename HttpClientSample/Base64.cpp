@@ -33,7 +33,7 @@ utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegi
 		// Data prepared, converting it to base64
 		const auto b64cred = conversions::to_base64(vCred);
 
-		if (appendToBegin != 0)
+		if (appendToBegin == 0)
 			return b64cred;
 		else {
 			// If something needs to be added before: composign header "Authorization" value
