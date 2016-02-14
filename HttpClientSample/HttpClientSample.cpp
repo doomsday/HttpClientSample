@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
 		printf("Received response status code:%u\n", response.status_code());
 
 		// Write response body into the file.
+		// asdfasdfasdf
 		return response.body().read_to_end(fileStream->streambuf());
 	})
 
