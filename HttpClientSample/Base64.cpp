@@ -7,7 +7,7 @@ Base64::Base64()
 {
 }
 
-utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegin = 0, const wchar_t* dataToConvert)
+utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegin = 0, const wchar_t* dataToConvert = 0)
 {
 	try {
 		if (dataToConvert == NULL)
@@ -51,6 +51,8 @@ utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegi
 		std::cout << "An unhandled exception in Base64.cpp occured" << '\n';
 		throw;
 	}
+
+	return 0;
 }
 
 Base64::~Base64()

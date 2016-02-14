@@ -5,14 +5,8 @@
 #include <cpprest\http_client.h>
 #include <cpprest\filestream.h>
 #include "Base64.h"
-//#include <openssl\bio.h>
-//#include <openssl\evp.h>
-//#include <openssl\applink.c>
-//#include <mbctype.h>
 
-
-
-using namespace utility;                    // Common utilities like string conversions
+//using namespace utility;                    // Common utilities like string conversions
 using namespace web;                        // Common features like URIs.
 using namespace web::http;                  // Common HTTP functionality
 using namespace web::http::client;          // HTTP client features
