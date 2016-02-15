@@ -15,7 +15,7 @@ using namespace concurrency::streams;       // Asynchronous streams
 
 int main(int argc, char* argv[])
 {
-	auto fileStream = std::make_shared<ostream>();
+	auto fileStream{ std::make_shared<ostream>() };
 
 	// Open stream to output file.
 	pplx::task<void> requestTask = fstream::open_ostream(U("results.json"), std::ios_base::trunc)
@@ -24,12 +24,11 @@ int main(int argc, char* argv[])
 	{
 		*fileStream = outFile;
 
-		http_client client(U("http://csk1.arta.kz/Synergy"));
-
-		http_request req(methods::GET);
+		http_request req{ methods::GET };
 		req.headers().add(L"Authorization", Base64::constructBase64HeaderValue(L"Basic ", L"restapi_test:restapi_test"));
 		req.set_request_uri(L"/rest/api/userchooser/search");
 
+		http_client client{ U("http://csk1.arta.kz/Synergy") };
 		return client.request(req);
 	})
 
