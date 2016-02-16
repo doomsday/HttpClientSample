@@ -11,7 +11,7 @@ utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegi
 {
 	try {
 		if (dataToConvert == NULL)
-			throw std::invalid_argument("dataToConvert");
+			throw std::invalid_argument{ "dataToConvert" };
 
 		size_t mByteCounter;
 		char *pMBBuffer = (char*)malloc(BUFFER_SIZE);
@@ -22,7 +22,7 @@ utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegi
 
 
 		// Converting sequence of multibyte characters to vector of unsigned chars for using in conversions::to_base64
-		std::string pString(pMBBuffer);
+		std::string pString{ pMBBuffer };
 		std::vector<unsigned char> vCred(mByteCounter - 1);
 		std::transform(pString.begin(), pString.end(), vCred.begin(),
 			[](wchar_t c)
@@ -31,13 +31,13 @@ utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegi
 		});
 
 		// Data prepared, converting it to base64
-		const auto b64cred = conversions::to_base64(vCred);
+		const auto b64cred{ conversions::to_base64(vCred) };
 
-		if (appendToBegin != 0)
+		if (appendToBegin == 0)
 			return b64cred;
 		else {
 			// If something needs to be added before: composign header "Authorization" value
-			utility::string_t valBegin = appendToBegin;
+			utility::string_t valBegin{ appendToBegin };
 			return valBegin.append(b64cred);
 		}
 	}

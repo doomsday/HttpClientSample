@@ -5,6 +5,7 @@
 #include <cpprest\http_client.h>
 #include <cpprest\filestream.h>
 #include "Base64.h"
+#include <cpprest\json.h>
 
 //using namespace utility;                    // Common utilities like string conversions
 using namespace web;                        // Common features like URIs.
@@ -15,7 +16,7 @@ using namespace concurrency::streams;       // Asynchronous streams
 
 int main(int argc, char* argv[])
 {
-	auto fileStream = std::make_shared<ostream>();
+	auto fileStream{ std::make_shared<ostream>() };
 
 	// Open stream to output file.
 	pplx::task<void> requestTask = fstream::open_ostream(U("results.json"), std::ios_base::trunc)
@@ -24,32 +25,39 @@ int main(int argc, char* argv[])
 	{
 		*fileStream = outFile;
 
-		http_client client(U("http://csk1.arta.kz/Synergy"));
-
-		http_request req(methods::GET);
+		http_request req{ methods::GET };
 		req.headers().add(L"Authorization", Base64::constructBase64HeaderValue(L"Basic ", L"restapi_test:restapi_test"));
 		req.set_request_uri(L"/rest/api/userchooser/search");
 
+		http_client client{ U("http://csk1.arta.kz/Synergy") };
 		return client.request(req);
 	})
 
-	// Handle response headers arriving.
+		// Handle response headers arriving.
 		.then([=](http_response response)
 	{
 		printf("Received response status code:%u\n", response.status_code());
 
-		// Write response body into the file.
-		// asdfasdfasdf
-		return response.body().read_to_end(fileStream->streambuf());
+		if (response.status_code() == status_codes::OK)
+			return response.extract_json();
+
+		return pplx::create_task([] { return json::value(); });
 	})
 
-		// Close the file stream.
-		.then([=](size_t)
+		.then([](json::value jsonValue)
 	{
-		return fileStream->close();
+		if (jsonValue.is_null())
+			return;
+
+		for (auto iterArray = jsonValue.as_object().cbegin(); iterArray != jsonValue.as_object().cend(); ++iterArray) {
+			const string_t &str = iterArray->first;
+			const json::value &v = iterArray->second;
+			std::wcout << L"String: " << str << L"Value: " << v.as_string() << std::endl;
+		}
+
 	});
 
-		try
+	try
 	{
 		requestTask.wait();
 	}
