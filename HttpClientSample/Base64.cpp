@@ -23,7 +23,7 @@ utility::string_t Base64::constructBase64HeaderValue(const wchar_t* appendToBegi
 
 		// Converting sequence of multibyte characters to vector of unsigned chars for using in conversions::to_base64
 		std::string pString{ pMBBuffer };
-		std::vector<unsigned char> vCred{ static_cast<unsigned char>(mByteCounter - 1) };
+		std::vector<unsigned char> vCred(mByteCounter - 1);
 		std::transform(pString.begin(), pString.end(), vCred.begin(),
 			[](wchar_t c)
 		{
