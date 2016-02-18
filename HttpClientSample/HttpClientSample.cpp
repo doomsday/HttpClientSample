@@ -6,6 +6,7 @@
 #include <cpprest\filestream.h>
 #include "Base64.h"
 #include <cpprest\json.h>
+#include <Windows.h>
 
 //using namespace utility;                    // Common utilities like string conversions
 using namespace web;                        // Common features like URIs.
@@ -13,6 +14,21 @@ using namespace web::http;                  // Common HTTP functionality
 using namespace web::http::client;          // HTTP client features
 using namespace concurrency::streams;       // Asynchronous streams
 
+typedef web::json::value::value_type JsonValueType;
+typedef std::wstring String;
+
+String JsonValueTypeToString(const JsonValueType& type)
+{
+	switch (type)
+	{
+	case JsonValueType::Array: return L"Array";
+	case JsonValueType::Boolean: return L"Boolean";
+	case JsonValueType::Null: return L"Null";
+	case JsonValueType::Number: return L"Number";
+	case JsonValueType::Object: return L"Object";
+	case JsonValueType::String: return L"String";
+	}
+}
 
 int main(int argc, char* argv[])
 {
@@ -48,11 +64,23 @@ int main(int argc, char* argv[])
 	{
 		if (jsonValue.is_null())
 			return;
+		try {
+			for (auto iterArray = jsonValue.as_array().cbegin(); iterArray != jsonValue.as_array().cend(); iterArray++) {
 
-		for (auto iterArray = jsonValue.as_object().cbegin(); iterArray != jsonValue.as_object().cend(); ++iterArray) {
-			const string_t &str = iterArray->first;
-			const json::value &v = iterArray->second;
-			std::wcout << L"String: " << str << L"Value: " << v.as_string() << std::endl;
+				// The array iterator returns json::values, and the object iterator now returns std::pair<string_t, json::value>
+				for (auto iterObj = iterArray->as_object().cbegin(); iterObj != iterArray->as_object().cend(); ++iterObj) {
+					const string_t& field{ iterObj->first };
+					const string_t& value{ iterObj->second.serialize() };
+					auto valueType{ JsonValueTypeToString(iterObj->second.type()) };
+
+					std::wcout << "field: " << field << ", value: " << value << ", type: " << valueType << std::endl;
+				}
+
+			}
+		}
+		catch (const web::json::json_exception& e) {
+			OutputDebugStringA(e.what());
+			OutputDebugStringA("\n");
 		}
 
 	});
