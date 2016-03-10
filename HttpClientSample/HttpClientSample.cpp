@@ -6,7 +6,6 @@
 #include <cpprest\filestream.h>
 #include "Base64.h"
 #include <cpprest\json.h>
-#include <Windows.h>
 
 //using namespace utility;                    // Common utilities like string conversions
 using namespace web;                        // Common features like URIs.
@@ -15,9 +14,10 @@ using namespace web::http::client;          // HTTP client features
 using namespace concurrency::streams;       // Asynchronous streams
 
 typedef web::json::value::value_type JsonValueType;
-typedef std::wstring String;
+#define TRUE 1
+#define FALSE 0
 
-String JsonValueTypeToString(const JsonValueType& type)
+std::wstring JsonValueTypeToString(const JsonValueType& type)
 {
 	switch (type)
 	{
@@ -27,6 +27,7 @@ String JsonValueTypeToString(const JsonValueType& type)
 	case JsonValueType::Number: return L"Number";
 	case JsonValueType::Object: return L"Object";
 	case JsonValueType::String: return L"String";
+	default: return L"Error: Nonconformant type";
 	}
 }
 
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
 
 		http_request req{ methods::GET };
 		req.headers().add(L"Authorization", Base64::constructBase64HeaderValue(L"Basic ", L"restapi_test:restapi_test"));
-		req.set_request_uri(L"/rest/api/userchooser/search");
+		req.set_request_uri(L"/rest/api/userchooser/search?showAll=true");
 
 		http_client client{ U("http://csk1.arta.kz/Synergy") };
 		return client.request(req);
@@ -62,27 +63,25 @@ int main(int argc, char* argv[])
 
 		.then([](json::value jsonValue)
 	{
+
 		if (jsonValue.is_null())
-			return;
-		try {
-			for (auto iterArray = jsonValue.as_array().cbegin(); iterArray != jsonValue.as_array().cend(); iterArray++) {
+			throw std::domain_error{ "JSON value is null" };
+		if (jsonValue.is_array() != TRUE)
+			throw std::domain_error{ "JSON is not an array" };
 
-				// The array iterator returns json::values, and the object iterator now returns std::pair<string_t, json::value>
-				for (auto iterObj = iterArray->as_object().cbegin(); iterObj != iterArray->as_object().cend(); ++iterObj) {
-					const string_t& field{ iterObj->first };
-					const string_t& value{ iterObj->second.serialize() };
-					auto valueType{ JsonValueTypeToString(iterObj->second.type()) };
+		for (auto iterArray = jsonValue.as_array().cbegin(); iterArray != jsonValue.as_array().cend(); iterArray++) {
 
-					std::wcout << "field: " << field << ", value: " << value << ", type: " << valueType << std::endl;
-				}
+			// The array iterator returns json::values, and the object iterator now returns std::pair<string_t, json::value>
+			for (auto iterObj = iterArray->as_object().cbegin(); iterObj != iterArray->as_object().cend(); ++iterObj) {
 
+				const string_t& field{ iterObj->first };
+				const string_t& value{ iterObj->second.serialize() };
+				auto valueType{ JsonValueTypeToString(iterObj->second.type()) };
+
+				std::wcout << "field: " << field << ", value: " << value << ", type: " << valueType << "\n";
 			}
+			std::wcout << std::endl;
 		}
-		catch (const web::json::json_exception& e) {
-			OutputDebugStringA(e.what());
-			OutputDebugStringA("\n");
-		}
-
 	});
 
 	try
